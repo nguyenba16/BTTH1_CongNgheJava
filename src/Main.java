@@ -1,7 +1,7 @@
 import java.util.Random;
 import java.util.Scanner;
 
-//### Bài 1 (4 điểm):
+//### Bài 1:
 //Chỉ sử dụng bán kính r$, không được sử dụng bất kỳ hằng
 // số nào khác, hãy xấp xỉ diện tích của hình tròn tâm $O(0 ,0)$ bán kính $r$.
 public class Main {
