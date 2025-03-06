@@ -1,6 +1,5 @@
 import java.util.Random;
-import java.util.Scanner;
-//### Bài 2 (4 điểm):
+//### Bài 2:
 //Xấp xỉ giá trị của $\pi$ thông qua đường tròn đơn vị (tâm $O(0, 0)$ bán kính $r=1$).
 
 public class Main {
