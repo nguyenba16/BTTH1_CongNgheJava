@@ -1,71 +1,80 @@
-import java.util.Scanner;
+import java.io.*;
 import java.util.*;
 
-class Point {
-    int x;
-    int y;
-    Point(int x, int y) {
-        this.x = x;
-        this.y = y;
-    }
-}
-
 public class Main {
-    public static int calculate(Point p1, Point p2, Point p3) {
-        return (p2.x - p1.x) * (p3.y - p1.y) - (p2.y - p1.y) * (p3.x - p1.x);
-    }
-
-    public static List<Point> convexresult(Point[] points) {
-        Arrays.sort(points, (a, b) -> {
-            if (a.y == b.y)
-                return a.x - b.x;
-            return a.y - b.y;
-        });
-        List<Point> result = new ArrayList<>();
-
-        for (Point p : points) {
-            while (result.size() >= 2 && calculate(result.get(result.size() - 2), result.get(result.size() - 1), p) <= 0) {
-                result.remove(result.size() - 1);
-            }
-            result.add(p);
-        }
-        int lowerSize = result.size();
-
-        for (int i = points.length - 2; i >= 0; i--) {
-            Point p = points[i];
-            while (result.size() > lowerSize && calculate(result.get(result.size() - 2), result.get(result.size() - 1), p) <= 0) {
-                result.remove(result.size() - 1);
-            }
-            result.add(p);
-        }
-        Set<Point> uniqueresult = new LinkedHashSet<>(result);
-        return new ArrayList<>(uniqueresult);
-    }
+    private static final int SO_TU_TOI_DA = 5; // Số từ tối đa trong câu sinh ra
+    private static Map<String, Integer> tanSuatTu = new HashMap<>(); // Tần suất từ
+    private static Map<String, List<String>> tuKeTiep = new HashMap<>(); // Danh sách từ đi sau từ hiện tại
+    private static Set<String> tuVung = new HashSet<>(); // Tập hợp từ hợp lệ
 
     public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
-        System.out.print("Nhập số lượng trạm : ");
-        int n = scanner.nextInt();
-        Point[] points = new Point[n];
-
-        System.out.println("Nhập tọa độ các trạm là :");
-        for (int i = 0; i < n; i++) {
-            int x = scanner.nextInt();
-            int y = scanner.nextInt();
-            points[i] = new Point(x, y);
+        Scanner sc = new Scanner(System.in);
+        System.out.println("Đang tải dữ liệu...");
+        if (!taiDuLieu("UIT-ViOCD.txt")) {
+            System.out.println("Lỗi tải dữ liệu từ file");
+            return;
         }
-        scanner.close();
 
-        List<Point> result = convexresult(points);
-        result.sort((a, b) -> {
-            if (a.x == b.x){
-                return a.y - b.y;
+        // Vòng lặp để nhập lại nếu từ không hợp lệ
+        String tuBatDau;
+        while (true) {
+            System.out.print("Nhập từ đầu tiên: ");
+            tuBatDau = sc.next().toLowerCase();
+            if (tuVung.contains(tuBatDau)) {
+                break;
+            } else {
+                System.out.println("Từ không tồn tại. Nhập lại: ");
             }
-            return a.x - b.x;
-        });
-        System.out.println("Kết quả :");
-        for (Point p : result) {
-            System.out.println(p.x + " " + p.y);
         }
+        sc.close();
+        String kq = sinhVanBan(tuBatDau);
+        System.out.println("Output: " + kq);
+    }
+
+    private static boolean taiDuLieu(String fileName) {
+        try {
+            BufferedReader docTep = new BufferedReader(new FileReader(fileName));
+            String col;
+
+            while ((col = docTep.readLine()) != null) {
+                String[] cacTu = col.toLowerCase().split("\\s+"); // Tách các từ
+                for (String tu : cacTu) {
+                    tanSuatTu.put(tu, tanSuatTu.getOrDefault(tu, 0) + 1); // Đếm số lần xuất hiện của từ
+                }
+
+                for (int i = 0; i < cacTu.length - 1; i++) {
+                    String tuHienTai = cacTu[i];
+                    String tuKe = cacTu[i + 1];
+                    tuKeTiep.putIfAbsent(tuHienTai, new ArrayList<>());
+                    tuKeTiep.get(tuHienTai).add(tuKe);
+                }
+            }
+            docTep.close();
+            for (String tu : tanSuatTu.keySet()) {
+                if (tanSuatTu.get(tu) >= 5) {
+                    tuVung.add(tu);
+                }
+            }
+            return true;
+        } catch (IOException e) {
+            System.out.println("Lỗi: " + e.getMessage());
+            return false;
+        }
+    }
+
+    private static String sinhVanBan(String tuBatDau) {
+        StringBuilder vanBan = new StringBuilder(tuBatDau);
+        String tuHienTai = tuBatDau;
+
+        for (int i = 0; i < SO_TU_TOI_DA - 1; i++) { // Giới hạn tổng cộng 5 từ
+            if (!tuKeTiep.containsKey(tuHienTai) || tuKeTiep.get(tuHienTai).isEmpty()) {
+                break;
+            }
+            List<String> danhSachTu = tuKeTiep.get(tuHienTai);
+            String tuMoi = danhSachTu.get(0);
+            vanBan.append(" ").append(tuMoi);
+            tuHienTai = tuMoi;
+        }
+        return vanBan.toString();
     }
 }
